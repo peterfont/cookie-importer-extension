@@ -80,23 +80,49 @@ function canImportCookie(cookie) {
 
 /**
  * 格式化cookie以符合chrome.cookies.set的格式
+ * 处理特殊的安全前缀Cookie，如__Host-和__Secure-
  * @param {Object} cookie - cookie对象
  * @returns {Object} - 格式化后的cookie对象
  */
 function formatCookieForImport(cookie) {
-  const url = `${cookie.secure ? 'https://' : 'http://'}${cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain}${cookie.path}`;
+  // 判断是否为特殊前缀的Cookie
+  const isHostPrefixed = cookie.name.startsWith('__Host-');
+  const isSecurePrefixed = cookie.name.startsWith('__Secure-');
   
-  return {
+  // 构建URL - 对所有安全前缀的Cookie强制使用HTTPS
+  const protocol = (isHostPrefixed || isSecurePrefixed || cookie.secure) ? 'https://' : 'http://';
+  const host = cookie.domain.startsWith('.') ? cookie.domain.substring(1) : cookie.domain;
+  const url = `${protocol}${host}${cookie.path}`;
+  
+  // 准备Cookie对象
+  const formattedCookie = {
     url: url,
     name: cookie.name,
     value: cookie.value,
-    domain: cookie.domain.startsWith('.') ? cookie.domain : undefined, // 只有当域名以点开始时才设置domain
     path: cookie.path,
-    secure: cookie.secure,
     httpOnly: cookie.httpOnly,
     expirationDate: cookie.expirationDate,
     storeId: "0" // 默认cookie store
   };
+  
+  // 处理Domain属性
+  // 对于__Host-前缀的Cookie，不设置domain属性（Chrome会使用URL的主机名）
+  if (!isHostPrefixed) {
+    // 只有当域名以点开始时才设置domain，否则使用URL中的主机名
+    if (cookie.domain.startsWith('.')) {
+      formattedCookie.domain = cookie.domain;
+    }
+  }
+  
+  // 处理安全标志
+  // 对于__Host-和__Secure-前缀的Cookie，必须设置secure为true
+  if (isHostPrefixed || isSecurePrefixed) {
+    formattedCookie.secure = true;
+  } else {
+    formattedCookie.secure = cookie.secure;
+  }
+  
+  return formattedCookie;
 }
 
 // 统一导出所有函数

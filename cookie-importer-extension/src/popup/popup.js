@@ -85,6 +85,24 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
       
+      // 检查是否有特殊Cookie失败
+      const specialCookieFails = progress.failedItems?.filter(item => item.isSpecialCookie) || [];
+      
+      if (specialCookieFails.length > 0) {
+        resultHTML += `
+          <div class="special-notice">
+            <h4>安全Cookie导入提示</h4>
+            <p>检测到 ${specialCookieFails.length} 个带有安全前缀(__Host-或__Secure-)的Cookie导入失败。</p>
+            <p>这些Cookie有特殊安全要求：</p>
+            <ul>
+              <li><strong>__Host-</strong>: 必须使用HTTPS，不能有Domain属性，Path必须为"/"</li>
+              <li><strong>__Secure-</strong>: 必须使用HTTPS</li>
+            </ul>
+            <p>这些限制是为了保护您的安全，浏览器强制实施。</p>
+          </div>
+        `;
+      }
+      
       // 添加失败项列表 (最多显示5个)
       if (progress.failedItems && progress.failedItems.length > 0) {
         resultHTML += '<div class="failed-items"><h4>部分失败项:</h4><ul>';

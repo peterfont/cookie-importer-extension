@@ -19,6 +19,9 @@ function importSingleCookie(cookie) {
     // 更新进度状态
     saveData('importProgress', importProgress);
     
+    // 检测特殊Cookie前缀
+    const isSpecialCookie = cookie.name.startsWith('__Host-') || cookie.name.startsWith('__Secure-');
+    
     // 使用Chrome cookies API设置cookie
     chrome.cookies.set(cookie, (result) => {
       if (result) {
@@ -26,14 +29,25 @@ function importSingleCookie(cookie) {
         resolve(true);
       } else {
         importProgress.failed++;
-        const error = chrome.runtime.lastError ? chrome.runtime.lastError.message : '未知错误';
+        let error = chrome.runtime.lastError ? chrome.runtime.lastError.message : '未知错误';
+        
+        // 如果是特殊前缀Cookie，提供更清晰的错误信息
+        if (isSpecialCookie && error.includes('not allowed to set')) {
+          if (cookie.name.startsWith('__Host-')) {
+            error = '无法设置__Host-前缀Cookie：需要HTTPS连接，无Domain属性，且Path必须为"/"';
+          } else if (cookie.name.startsWith('__Secure-')) {
+            error = '无法设置__Secure-前缀Cookie：需要HTTPS连接';
+          }
+        }
+        
         console.error(`Failed to set cookie: ${cookie.name} for ${cookie.domain}`, error);
         
         // 记录失败的Cookie
         importProgress.failedItems.push({
-          domain: cookie.domain,
+          domain: cookie.domain || cookie.url,
           name: cookie.name,
-          error: error
+          error: error,
+          isSpecialCookie: isSpecialCookie
         });
         
         resolve(false);
