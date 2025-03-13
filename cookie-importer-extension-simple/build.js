@@ -9,10 +9,15 @@ const JavaScriptObfuscator = require('webpack-obfuscator');
 const archiver = require('archiver');
 const chalk = require('chalk');
 
-// 路径配置
-const srcDir = path.resolve(__dirname, 'cookie-importer-extension-simple');
-const distDir = path.resolve(__dirname, 'dist');
-const zipPath = path.resolve(__dirname, 'cookie-importer-extension-simple.zip');
+// 路径配置 - 修正为当前目录下的dist
+const srcDir = path.resolve(__dirname); // 当前目录作为源目录
+const distDir = path.resolve(__dirname, './dist'); // 当前目录下的dist文件夹
+const zipPath = path.resolve(__dirname, './cookie-importer-extension-simple.zip'); // 当前目录下的zip文件
+
+// 显示路径信息以便调试
+console.log(chalk.blue('📂 源代码目录:'), srcDir);
+console.log(chalk.blue('📂 输出目录:'), distDir);
+console.log(chalk.blue('📂 压缩包路径:'), zipPath);
 
 // 创建dist目录（如果不存在）
 if (!fs.existsSync(distDir)) {
@@ -21,8 +26,12 @@ if (!fs.existsSync(distDir)) {
 
 // 清理dist目录
 console.log(chalk.blue('🧹 清理 dist 目录...'));
-fs.rmdirSync(distDir, { recursive: true, force: true });
-fs.mkdirSync(distDir, { recursive: true });
+try {
+  fs.rmSync(distDir, { recursive: true, force: true });
+  fs.mkdirSync(distDir, { recursive: true });
+} catch (error) {
+  console.error(chalk.red('❌ 清理目录失败:'), error.message);
+}
 
 // Webpack配置
 const webpackConfig = {
@@ -39,6 +48,9 @@ const webpackConfig = {
     path: `${distDir}/src`,
     filename: '[name].js',
     clean: false // 不清理输出文件夹，我们已经手动清理了
+  },
+  resolve: {
+    extensions: ['.js', '.json']
   },
   optimization: {
     minimize: true,
@@ -92,29 +104,35 @@ const webpackConfig = {
         { from: `${srcDir}/manifest.json`, to: `${distDir}/manifest.json` },
         { from: `${srcDir}/src/popup/popup.html`, to: `${distDir}/src/popup/popup.html` },
         { from: `${srcDir}/src/popup/popup.css`, to: `${distDir}/src/popup/popup.css` },
-        { from: `${srcDir}/assets`, to: `${distDir}/assets` },
+        { from: `${srcDir}/assets`, to: `${distDir}/assets`, noErrorOnMissing: true },
       ],
     }),
-    // JavaScript代码混淆器
+    // 为了解决导入问题，降低混淆强度
     new JavaScriptObfuscator({
-      compact: true, // 压缩代码
-      controlFlowFlattening: true, // 控制流平坦化
-      controlFlowFlatteningThreshold: 0.7, // 控制流平坦化阈值
-      deadCodeInjection: true, // 注入死代码
-      deadCodeInjectionThreshold: 0.4, // 死代码注入阈值
-      debugProtection: true, // 调试保护
-      debugProtectionInterval: true, // 调试保护间隔
-      disableConsoleOutput: true, // 禁用 console.* 输出
-      identifierNamesGenerator: 'hexadecimal', // 标识符生成器
-      log: false, // 日志
-      renameGlobals: false, // 不重命名全局变量
-      rotateStringArray: true, // 旋转字符串数组
-      selfDefending: true, // 自我防御
-      stringArray: true, // 字符串数组
-      stringArrayEncoding: ['base64'], // 字符串数组编码
-      stringArrayThreshold: 0.75, // 字符串数组阈值
-      transformObjectKeys: true, // 转换对象键
-      unicodeEscapeSequence: false // 不使用unicode转义
+      compact: true,
+      // 显著降低混淆强度，以确保功能正常工作
+      controlFlowFlattening: false, // 禁用控制流平坦化
+      deadCodeInjection: false,     // 禁用死代码注入
+      // 保留所有关键功能名称
+      reservedNames: [
+        'decryptData', 'parseCookies', 'importCookies', 'encryptData',
+        'saveData', 'getData', 'chrome', 'TextEncoder', 'TextDecoder',
+        'Uint8Array', 'atob', 'btoa'
+      ],
+      // 其它配置保持相对简单
+      debugProtection: false,
+      debugProtectionInterval: 0,
+      disableConsoleOutput: false, // 允许控制台输出以便调试
+      identifierNamesGenerator: 'hexadecimal',
+      log: false,
+      renameGlobals: false,
+      rotateStringArray: false,
+      selfDefending: false,
+      stringArray: true,
+      stringArrayEncoding: ['none'], // 不进行额外编码
+      stringArrayThreshold: 0.5,
+      transformObjectKeys: false,
+      unicodeEscapeSequence: false
     }),
     // 显示构建进度
     new webpack.ProgressPlugin({
@@ -135,31 +153,151 @@ const webpackConfig = {
 // 运行Webpack构建
 console.log(chalk.blue('🔨 开始构建...'));
 webpack(webpackConfig, (err, stats) => {
-  if (err || stats.hasErrors()) {
-    console.error(chalk.red('❌ 构建失败:'));
-    if (err) {
-      console.error(err.stack || err);
-      if (err.details) {
-        console.error(err.details);
-      }
-      return;
-    }
-    
-    const info = stats.toJson();
-    if (stats.hasErrors()) {
-      console.error(chalk.red(info.errors));
-    }
-    if (stats.hasWarnings()) {
-      console.warn(chalk.yellow(info.warnings));
+  if (err) {
+    console.error(chalk.red('❌ 构建时发生错误:'));
+    console.error(err.stack || err);
+    if (err.details) {
+      console.error(chalk.red('错误详情:'));
+      console.error(err.details);
     }
     return;
   }
 
+  const info = stats.toJson();
+  
+  // 处理错误
+  if (stats.hasErrors()) {
+    console.error(chalk.red('❌ 构建过程中出现错误:'));
+    info.errors.forEach((error, index) => {
+      console.error(chalk.red(`错误 ${index + 1}:`));
+      console.error(typeof error === 'object' ? error.message || JSON.stringify(error) : error);
+    });
+    return;
+  }
+  
+  // 处理警告
+  if (stats.hasWarnings()) {
+    console.warn(chalk.yellow('⚠️ 构建过程中出现警告:'));
+    info.warnings.forEach((warning, index) => {
+      console.warn(chalk.yellow(`警告 ${index + 1}:`));
+      console.warn(typeof warning === 'object' ? warning.message || JSON.stringify(warning) : warning);
+    });
+  }
+
   console.log(chalk.green('✅ 构建完成!'));
+  
+  // 添加简单调试脚本以帮助诊断问题
+  addDebugSupport();
   
   // 创建压缩包
   createZipArchive();
 });
+
+// 添加调试支持
+function addDebugSupport() {
+  console.log(chalk.blue('🔍 添加调试支持...'));
+  
+  // 添加调试助手到popup.js
+  const popupJsPath = `${distDir}/src/popup/popup.js`;
+  
+  try {
+    if (fs.existsSync(popupJsPath)) {
+      let jsContent = fs.readFileSync(popupJsPath, 'utf-8');
+      
+      // 添加调试包装器
+      const debugWrapper = `
+// 调试支持 - 开始
+window.addEventListener('error', function(event) {
+  const errorDiv = document.createElement('div');
+  errorDiv.style.color = 'red';
+  errorDiv.style.border = '1px solid red';
+  errorDiv.style.padding = '10px';
+  errorDiv.style.margin = '10px';
+  errorDiv.style.backgroundColor = '#ffebee';
+  errorDiv.textContent = '错误: ' + event.message + ' at ' + event.filename + ':' + event.lineno;
+  document.body.appendChild(errorDiv);
+});
+
+try {
+${jsContent}
+} catch (globalError) {
+  console.error('全局错误:', globalError);
+  // 创建错误显示
+  setTimeout(function() {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.style.border = '1px solid red';
+    errorDiv.style.padding = '10px';
+    errorDiv.style.margin = '10px';
+    errorDiv.style.backgroundColor = '#ffebee';
+    errorDiv.textContent = '全局错误: ' + globalError.message;
+    document.body.appendChild(errorDiv);
+  }, 500);
+}
+// 调试支持 - 结束
+      `;
+      
+      fs.writeFileSync(popupJsPath, debugWrapper);
+      console.log(chalk.green('✅ 调试支持已添加到 popup.js'));
+    }
+  } catch (error) {
+    console.error(chalk.red('❌ 添加调试支持失败:'), error.message);
+  }
+}
+
+// 自定义助手函数：额外处理HTML文件中的内联JS
+function processHtmlFiles() {
+  console.log(chalk.blue('🔍 处理HTML文件...'));
+  
+  // 处理 popup.html，找到内联脚本，提取出来，并加密，然后替换回去
+  const popupHtmlPath = `${distDir}/src/popup/popup.html`;
+  
+  try {
+    if (fs.existsSync(popupHtmlPath)) {
+      let htmlContent = fs.readFileSync(popupHtmlPath, 'utf-8');
+      
+      // 使用正则表达式提取内联脚本
+      const scriptRegex = /<script>([\s\S]*?)<\/script>/gi;
+      let hasScripts = false;
+      
+      htmlContent = htmlContent.replace(scriptRegex, (match, script) => {
+        hasScripts = true;
+        // 最小化内联JS的混淆，确保功能正常
+        const obfuscator = require('javascript-obfuscator');
+        const obfuscatedScript = obfuscator.obfuscate(script, {
+          compact: true,
+          controlFlowFlattening: false,
+          deadCodeInjection: false,
+          debugProtection: false,
+          debugProtectionInterval: 0,
+          disableConsoleOutput: false,
+          identifierNamesGenerator: 'hexadecimal',
+          rotateStringArray: false,
+          selfDefending: false,
+          stringArray: true,
+          stringArrayEncoding: ['none'],
+          stringArrayThreshold: 0.5,
+          transformObjectKeys: false
+        }).getObfuscatedCode();
+        
+        return `<script>${obfuscatedScript}</script>`;
+      });
+      
+      // 如果有脚本被处理
+      if (hasScripts) {
+        // 写回处理后的HTML文件
+        fs.writeFileSync(popupHtmlPath, htmlContent);
+        console.log(chalk.green('✅ HTML文件中的JS代码已处理'));
+      } else {
+        console.log(chalk.yellow('⚠️ HTML文件中未发现内联脚本'));
+      }
+    } else {
+      console.warn(chalk.yellow('⚠️ 找不到popup.html文件'));
+    }
+  } catch (error) {
+    console.error(chalk.red('❌ 处理HTML文件失败:'), error.message);
+  }
+}
 
 // 创建ZIP压缩包
 function createZipArchive() {
@@ -200,47 +338,4 @@ function createZipArchive() {
 
   // 完成归档
   archive.finalize();
-}
-
-// 自定义助手函数：额外处理HTML文件中的内联JS
-function processHtmlFiles() {
-  console.log(chalk.blue('🔍 处理HTML文件...'));
-  
-  // 处理 popup.html，找到内联脚本，提取出来，并加密，然后替换回去
-  const popupHtmlPath = `${distDir}/src/popup/popup.html`;
-  if (fs.existsSync(popupHtmlPath)) {
-    let htmlContent = fs.readFileSync(popupHtmlPath, 'utf-8');
-    
-    // 使用正则表达式提取内联脚本
-    const scriptRegex = /<script>([\s\S]*?)<\/script>/gi;
-    htmlContent = htmlContent.replace(scriptRegex, (match, script) => {
-      // 处理内联脚本 - 这里可以使用obfuscator直接处理
-      const obfuscator = require('javascript-obfuscator');
-      const obfuscatedScript = obfuscator.obfuscate(script, {
-        compact: true,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 0.7,
-        deadCodeInjection: true,
-        deadCodeInjectionThreshold: 0.4,
-        debugProtection: true,
-        debugProtectionInterval: true,
-        disableConsoleOutput: true,
-        identifierNamesGenerator: 'hexadecimal',
-        rotateStringArray: true,
-        selfDefending: true,
-        stringArray: true,
-        stringArrayEncoding: ['base64'],
-        stringArrayThreshold: 0.75,
-        transformObjectKeys: true
-      }).getObfuscatedCode();
-      
-      return `<script>${obfuscatedScript}</script>`;
-    });
-    
-    // 写回处理后的HTML文件
-    fs.writeFileSync(popupHtmlPath, htmlContent);
-    console.log(chalk.green('✅ HTML文件处理完成'));
-  } else {
-    console.warn(chalk.yellow('⚠️ 找不到popup.html文件'));
-  }
 }
