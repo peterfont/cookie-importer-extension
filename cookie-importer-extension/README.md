@@ -1,1 +1,0 @@
-# cookie-importer-extension
