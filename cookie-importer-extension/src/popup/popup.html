@@ -4,6 +4,8 @@
     <div class="tabs">
         <button class="tab-button active" data-tab="normal-tab">标准导入</button>
         <button class="tab-button" data-tab="encrypted-tab">加密导入</button>
+        <button class="tab-button" data-tab="encrypt-tab">加密工具</button>
+        <button class="tab-button" data-tab="batch-encrypt-tab">批量加密</button>
       </div>
       
       <div id="normal-tab" class="tab-content active">
@@ -26,8 +28,86 @@
           <p class="helper-text">通过加密工具生成的数据可以在这里解密并导入</p>
         </div>
       </div>
+
+      <div id="encrypt-tab" class="tab-content">
+        <div class="file-input-section">
+          <h2>上传Cookie文件进行加密</h2>
+          <input type="file" id="encryptFileInput" accept=".txt">
+          <p class="helper-text">选择Netscape格式的Cookie文件 (.txt)</p>
+        </div>
+        
+        <div class="textarea-section">
+          <h2>或直接粘贴Cookie数据进行加密</h2>
+          <textarea id="encryptTextarea" placeholder="粘贴Netscape格式的Cookie数据..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="encryptButton" class="primary-btn">加密数据</button>
+          <button id="clearEncryptButton" class="secondary-btn">清除</button>
+        </div>
+
+        <div class="textarea-section">
+          <h2>加密结果</h2>
+          <textarea id="encryptResultTextarea" placeholder="加密后的数据会显示在这里..." readonly></textarea>
+          <button id="copyEncryptButton" class="secondary-btn">复制加密数据</button>
+        </div>
+
+        <div class="help-section">
+          <h3>为什么需要加密？</h3>
+          <p>Cookie 数据可能包含敏感的会话信息，通过加密可以保护这些数据在传输或分享过程中不被未授权访问。此工具使用强大的 AES-GCM 加密算法确保您的 Cookie 数据安全。</p>
+        </div>
+      </div>
+
+      <div id="batch-encrypt-tab" class="tab-content">
+        <div class="file-input-section batch-file-section">
+          <h2>批量选择Cookie文件</h2>
+          <div class="drop-area" id="batchDropArea">
+            <div class="drop-area-text">拖放文件到这里，或者点击下方按钮选择文件</div>
+            <label class="file-input-label">
+              选择多个Cookie文件
+              <input type="file" id="batchFileInput" multiple accept=".txt">
+            </label>
+            <p class="helper-text">支持多选Netscape格式的Cookie文件(.txt)</p>
+          </div>
+        </div>
+
+        <div class="selected-files empty" id="selectedFilesContainer">
+          <h3>已选择的文件</h3>
+          <div id="selectedFilesList"></div>
+        </div>
+
+        <div class="batch-actions">
+          <button id="batchEncryptButton" class="primary-btn" disabled>批量加密</button>
+          <button id="clearBatchButton" class="secondary-btn" disabled>清除所有文件</button>
+        </div>
+
+        <div class="batch-progress-container" id="batchProgressContainer" style="display: none;">
+          <h3>加密进度</h3>
+          <div class="progress-bar-container">
+            <div id="batchProgressBar" class="progress-bar"></div>
+          </div>
+          <div class="progress-text" id="batchProgressText">处理中: 0/0</div>
+        </div>
+
+        <div class="batch-results-container" id="batchResultsContainer" style="display: none;">
+          <h3>批量加密结果</h3>
+          <div class="batch-results-table" id="batchResultsTable">
+            <!-- 动态填充内容 -->
+          </div>
+
+          <div class="export-options">
+            <h4>导出所有结果</h4>
+            <div class="export-format-selector">
+              <div class="format-option selected" data-format="json">JSON 格式</div>
+              <div class="format-option" data-format="csv">CSV 格式</div>
+            </div>
+            <button id="exportAllButton" class="secondary-btn">导出所有加密结果</button>
+            <div id="downloadLinkContainer" style="margin-top: 10px;"></div>
+          </div>
+        </div>
+      </div>
       
-      <div class="actions">
+      <div class="actions" id="mainActions">
         <button id="importButton" class="primary-btn">导入Cookie</button>
         <button id="clearButton" class="secondary-btn">清除</button>
       </div>

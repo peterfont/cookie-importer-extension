@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Cookie 导入工具",
-  "version": "1.0",
-  "description": "从 Netscape 格式文件或加密数据导入 Cookie 到浏览器",
+  "version": "1.2",
+  "description": "从 Netscape 格式文件或加密数据导入 Cookie 到浏览器，支持批量加密功能",
   "permissions": [
     "cookies",
     "storage",
@@ -30,7 +30,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["encrypt-page.html"],
+      "resources": ["encrypt-page.html", "batch-encrypt-page.html"],
       "matches": ["<all_urls>"]
     }
   ]

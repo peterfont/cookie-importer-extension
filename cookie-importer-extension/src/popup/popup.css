@@ -182,8 +182,8 @@ body {
   .tab-button {
     background: none;
     border: none;
-    padding: 10px 15px;
-    font-size: 14px;
+    padding: 8px 12px;
+    font-size: 13px;
     cursor: pointer;
     color: #666;
     border-bottom: 2px solid transparent;
@@ -237,4 +237,286 @@ body {
   
   .special-notice li {
     margin-bottom: 2px;
+  }
+
+  .help-section {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #e8f4fc;
+    border-radius: 4px;
+    background-color: #f0f9ff;
+    font-size: 12px;
+  }
+  
+  .help-section h3 {
+    margin-top: 0;
+    color: #1a73e8;
+    font-size: 14px;
+  }
+  
+  .help-section p {
+    margin: 8px 0 0 0;
+    line-height: 1.5;
+    color: #555;
+  }
+
+  /* 批量加密样式 */
+  .batch-file-section {
+    border: 2px dashed #ccc;
+    transition: all 0.3s;
+  }
+
+  .batch-file-section.dragover {
+    background-color: #e8f0fe;
+    border-color: #1a73e8;
+  }
+
+  .drop-area {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .drop-area-text {
+    font-size: 14px;
+    margin-bottom: 15px;
+    color: #666;
+  }
+
+  .file-input-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #1a73e8;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+  }
+
+  .file-input-label:hover {
+    background-color: #0d62c9;
+  }
+
+  .file-input-label input[type="file"] {
+    display: none;
+  }
+
+  .selected-files {
+    margin-top: 15px;
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+
+  .selected-files.empty {
+    display: none;
+  }
+
+  .selected-files h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+  }
+
+  .file-item:last-child {
+    border-bottom: none;
+  }
+
+  .file-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-remove {
+    color: #d23f31;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+    user-select: none;
+    font-size: 16px;
+  }
+
+  .file-remove:hover {
+    text-decoration: underline;
+  }
+
+  .batch-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .batch-progress-container {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+  }
+
+  .batch-progress-container h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .batch-results-container {
+    margin-top: 20px;
+  }
+
+  .batch-results-container h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #555;
+  }
+
+  .batch-results-table {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+  .result-row {
+    display: flex;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    font-size: 12px;
+  }
+
+  .result-row:last-child {
+    border-bottom: none;
+  }
+
+  .result-row:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  .result-file-name {
+    flex: 0 0 30%;
+    padding-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .result-encrypted-data {
+    flex: 0 0 50%;
+    padding-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #666;
+  }
+
+  .result-actions {
+    flex: 0 0 20%;
+    text-align: right;
+  }
+
+  .copy-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .copy-btn:hover {
+    background-color: #0d62c9;
+  }
+
+  .export-options {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+  }
+
+  .export-options h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  .export-format-selector {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .format-option {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: white;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+
+  .format-option.selected {
+    border-color: #1a73e8;
+    background-color: #e8f0fe;
+    color: #1a73e8;
+  }
+
+  .format-option:hover {
+    border-color: #1a73e8;
+  }
+
+  .download-link {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #34a853;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 12px;
+    transition: background-color 0.2s;
+  }
+
+  .download-link:hover {
+    background-color: #2d9348;
+  }
+
+  /* 调整标签页宽度以适应四个标签 */
+  .tab-button {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+    flex: 1;
+    text-align: center;
   }
